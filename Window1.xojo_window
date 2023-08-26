@@ -77,41 +77,6 @@ Begin Window Window1
          Width           =   128
       End
    End
-   Begin Label stFilePath
-      AutoDeactivate  =   True
-      Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
-      Enabled         =   True
-      Height          =   20
-      HelpTag         =   ""
-      Index           =   -2147483648
-      InitialParent   =   ""
-      Italic          =   False
-      Left            =   162
-      LockBottom      =   False
-      LockedInPosition=   False
-      LockLeft        =   True
-      LockRight       =   True
-      LockTop         =   True
-      Multiline       =   False
-      Scope           =   0
-      Selectable      =   False
-      TabIndex        =   1
-      TabPanelIndex   =   0
-      TabStop         =   True
-      Text            =   "--"
-      TextAlign       =   0
-      TextColor       =   &c00000000
-      TextFont        =   "System"
-      TextSize        =   0.0
-      TextUnit        =   0
-      Top             =   16
-      Transparent     =   False
-      Underline       =   False
-      Visible         =   True
-      Width           =   343
-   End
    Begin PushButton pbShrink
       AutoDeactivate  =   True
       Bold            =   False
@@ -161,7 +126,7 @@ Begin Window Window1
       DataSource      =   ""
       Enabled         =   True
       Height          =   20
-      HelpTag         =   ""
+      HelpTag         =   "Swap the 2 bytes of the 565 colour. Required on some screens."
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
@@ -179,9 +144,10 @@ Begin Window Window1
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   181
+      Top             =   183
       Transparent     =   False
       Underline       =   False
+      Value           =   False
       Visible         =   True
       Width           =   102
    End
@@ -193,7 +159,7 @@ Begin Window Window1
       DataSource      =   ""
       Enabled         =   True
       Height          =   20
-      HelpTag         =   ""
+      HelpTag         =   "Creates a 2-byte header file for things like tft.pushRect()."
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
@@ -226,7 +192,7 @@ Begin Window Window1
       DataSource      =   ""
       Enabled         =   True
       Height          =   20
-      HelpTag         =   ""
+      HelpTag         =   "Creates a 3-byte RGB header file."
       Index           =   -2147483648
       InitialParent   =   ""
       Italic          =   False
@@ -269,7 +235,7 @@ Begin Window Window1
       GridLinesVertical=   0
       HasHeading      =   False
       HeadingIndex    =   -1
-      Height          =   280
+      Height          =   314
       HelpTag         =   ""
       Hierarchical    =   False
       Index           =   -2147483648
@@ -294,13 +260,49 @@ Begin Window Window1
       TextFont        =   "System"
       TextSize        =   0.0
       TextUnit        =   0
-      Top             =   48
+      Top             =   14
       Transparent     =   False
       Underline       =   False
       UseFocusRing    =   False
       Visible         =   True
       Width           =   341
+      _ScrollOffset   =   0
       _ScrollWidth    =   -1
+   End
+   Begin Label stComment
+      AutoDeactivate  =   True
+      Bold            =   False
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      Height          =   20
+      HelpTag         =   ""
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   False
+      Left            =   20
+      LockBottom      =   True
+      LockedInPosition=   False
+      LockLeft        =   True
+      LockRight       =   True
+      LockTop         =   False
+      Multiline       =   False
+      Scope           =   0
+      Selectable      =   False
+      TabIndex        =   8
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Text            =   "--"
+      TextAlign       =   0
+      TextColor       =   &c00000000
+      TextFont        =   "System"
+      TextSize        =   0.0
+      TextUnit        =   0
+      Top             =   340
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   True
+      Width           =   393
    End
 End
 #tag EndWindow
@@ -341,7 +343,7 @@ End
 		  Canvas1.Refresh()
 		  
 		  FolderRef=fi
-		  stFilePath.Text=FolderRef.ShellPath
+		  lbLog.AddRow FolderRef.ShellPath
 		  
 		  lbLog.AddRow "Ready to process "+FolderRef.ShellPath
 		  
@@ -431,7 +433,9 @@ End
 		    tos.WriteLine("//File: "+fn+", Size: "+Str(ln))
 		    tos.WriteLine("#define "+fn+"_len "+Str(ln))
 		    tos.WriteLine("const uint8_t "+fn+"[] PROGMEM = {")
-		    
+		    lbLog.AddRow("    //File: "+fn+", Size: "+Str(ln))
+		    lbLog.AddRow("    #define "+fn+"_len "+Str(ln))
+		    lbLog.AddRow("    const uint8_t "+fn+"[] PROGMEM = {...}")
 		    i=0
 		    While Not bs.EOF
 		      x=AscB(bs.Read(1))
@@ -473,6 +477,11 @@ End
 		    tos.WriteLine("#define "+fn+"_width "+Str(CanvasPicture.Width))
 		    tos.WriteLine("#define "+fn+"_height "+Str(CanvasPicture.Height))
 		    tos.WriteLine("const uint16_t "+fn+"[] PROGMEM = {")
+		    lbLog.AddRow("    //File: "+fn+", Size: "+Str(ln))
+		    lbLog.AddRow("    #define "+fn+"_len "+Str(ln))
+		    lbLog.AddRow("    #define "+fn+"_width "+Str(CanvasPicture.Width))
+		    lbLog.AddRow("    #define "+fn+"_height "+Str(CanvasPicture.Height))
+		    lbLog.AddRow("    const uint16_t "+fn+"[] PROGMEM = {")
 		    
 		    Dim wx, hx As Integer
 		    Dim c As Color
@@ -523,6 +532,20 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
+#tag Events cbSwapBytes
+	#tag Event
+		Sub MouseExit()
+		  stComment.Text = ""
+		  
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub MouseEnter()
+		  stComment.Text = me.Tooltip
+		  
+		End Sub
+	#tag EndEvent
+#tag EndEvents
 #tag Events cb565
 	#tag Event
 		Sub Action()
@@ -534,8 +557,32 @@ End
 		  
 		End Sub
 	#tag EndEvent
+	#tag Event
+		Sub MouseEnter()
+		  stComment.Text = me.Tooltip
+		  
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub MouseExit()
+		  stComment.Text = ""
+		  
+		End Sub
+	#tag EndEvent
 #tag EndEvents
 #tag Events cb8bit
+	#tag Event
+		Sub MouseEnter()
+		  stComment.Text = me.Tooltip
+		  
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub MouseExit()
+		  stComment.Text = ""
+		  
+		End Sub
+	#tag EndEvent
 #tag EndEvents
 #tag ViewBehavior
 	#tag ViewProperty
